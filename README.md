@@ -11,7 +11,7 @@ Use maven for build:
 Here's the code you must load in the Arduino part of the UDOO
 
 ```Arduino
-int led = 2;
+int led = 13;
 
 int topRed, topGreen, topBlue; 
 int bottomRed, bottomGreen, bottomBlue; 
