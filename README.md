@@ -10,7 +10,7 @@ Use maven for build:
 
 Here's the code you must load in the Arduino part of the UDOO
 
-```c_cpp
+```Arduino
 int led = 2;
 
 int topRed, topGreen, topBlue; 
