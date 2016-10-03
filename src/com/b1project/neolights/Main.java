@@ -16,15 +16,24 @@ public class Main {
 
     private static Socket socket;
     private static PrintWriter outPrintWriter;
+    private static int r_top_old = 0;
+    private static int g_top_old = 0;
+    private static int b_top_old = 0;
+    private static int bottom_r_old = 0;
+    private static int bottom_g_old = 0;
+    private static int bottom_b_old = 0;
 
     public static void main(String[] args) {
-        FFmpegFrameGrabber grabber = null;
+        FFmpegFrameGrabber topGrabber = null;
+        FFmpegFrameGrabber bottomGrabber = null;
         OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 try {
                     Thread.sleep(200);
-                    System.out.println("Shouting down ...");
+                    sendColorValue(0, 0, 0, 0, 0, 0);
+                    Thread.sleep(2);
+                    System.out.println("Shutting down ...");
                     closeSocket();
 
                 } catch (InterruptedException e) {
@@ -38,24 +47,32 @@ public class Main {
 
             openSocket(args[0], Integer.parseInt(args[1]));
 
-            int r = 0;
-            int g = 0;
-            int b = 0;
-            int r_old = 0;
-            int g_old = 0;
-            int b_old = 0;
+            int top_r = 0;
+            int top_g = 0;
+            int top_b = 0;
+            int bottom_r = 0;
+            int bottom_g = 0;
+            int bottom_b = 0;
             String loader = "-";
 
             int x = 1440;
-            int y = 0;
+            int top_y = 0;
+            int bottom_y = 880;
             int width = 1920;
             int height = 200;
-            grabber = new FFmpegFrameGrabber(":0.0+" + x + "," + y);
-            grabber.setFormat("x11grab");
-            grabber.setImageWidth(width);
-            grabber.setImageHeight(height);
-            grabber.start();
+            topGrabber = new FFmpegFrameGrabber(":0.0+" + x + "," + top_y);
+            topGrabber.setFormat("x11grab");
+            topGrabber.setImageWidth(width);
+            topGrabber.setImageHeight(height);
+            topGrabber.start();
 
+            bottomGrabber = new FFmpegFrameGrabber(":0.0+" + x + "," + bottom_y);
+            bottomGrabber.setFormat("x11grab");
+            bottomGrabber.setImageWidth(width);
+            bottomGrabber.setImageHeight(height);
+            bottomGrabber.start();
+
+            //noinspection InfiniteLoopStatement
             while(true) {
                 System.out.printf("  Scanning %s                          \r", loader);
                 switch (loader){
@@ -74,37 +91,40 @@ public class Main {
                 }
 
                 if(displayInfo.getDisplayStatus() == 0) {
-                    final opencv_core.IplImage screenshot = converter.convert(grabber.grab());
+                    final opencv_core.IplImage top_screenshot = converter.convert(topGrabber.grab());
+                    final opencv_core.IplImage bottom_screenshot = converter.convert(bottomGrabber.grab());
 
                     for (int i = 0; i < width; i = i + 4) {
                         for (int j = 0; j < height; j = j + 4) {
-                            opencv_core.CvScalar scalar = opencv_core.cvGet2D(screenshot, j, i);
-                            r += (int) scalar.val(2);
-                            g += (int) scalar.val(1);
-                            b += (int) scalar.val(0);
+                            opencv_core.CvScalar top_scalar = opencv_core.cvGet2D(top_screenshot, j, i);
+                            opencv_core.CvScalar bottom_scalar = opencv_core.cvGet2D(bottom_screenshot, j, i);
+                            top_r += (int) top_scalar.val(2);
+                            top_g += (int) top_scalar.val(1);
+                            top_b += (int) top_scalar.val(0);
+                            bottom_r += (int) bottom_scalar.val(2);
+                            bottom_g += (int) bottom_scalar.val(1);
+                            bottom_b += (int) bottom_scalar.val(0);
                         }
                     }
-                    r = Math.round(r / (480 * 50)); //average red (remember that I skipped ever alternate pixel)
-                    g = Math.round(g / (480 * 50)); //average green
-                    b = Math.round(b / (480 * 50)); //average blue*
+                    top_r = Math.round(top_r / (480 * 50)); //average red (remember that I skipped ever alternate pixel)
+                    top_g = Math.round(top_g / (480 * 50)); //average green
+                    top_b = Math.round(top_b / (480 * 50)); //average blue*
+                    bottom_r = Math.round(bottom_r / (480 * 50)); //average red (remember that I skipped ever alternate pixel)
+                    bottom_g = Math.round(bottom_g / (480 * 50)); //average green
+                    bottom_b = Math.round(bottom_b / (480 * 50)); //average blue*
                 }
                 else{
-                    r = 0xaa;
-                    g = 0x00;
-                    b = 0x00;
+                    top_r = 0xaa;
+                    top_g = 0x00;
+                    top_b = 0x00;
+                    bottom_r = 0xaa;
+                    bottom_g = 0x00;
+                    bottom_b = 0x00;
                 }
-                if(r != r_old || g != g_old || b != b_old) {
+                if(top_r != r_top_old || top_g != g_top_old || top_b != b_top_old
+                        || bottom_r != bottom_r_old || bottom_g != bottom_g_old || bottom_b != bottom_b_old) {
                     System.out.printf("  Changes detected, sending request...\r");
-                    final String request = String.format("{\"method\":\"%s\",\"detailMessage\":\"%d,%d,%d\"}", REQ_SERIAL_RGB_VALUE, r, g, b);
-                    Thread t = new Thread() {
-                        public void run(){
-                            sendRequest(request);
-                        }
-                    };
-                    t.start();
-                    r_old = r;
-                    g_old = g;
-                    b_old = b;
+                    sendColorValue(top_r, top_g, top_b, bottom_r, bottom_g, bottom_b);
                 }
                 Thread.sleep(100);
             }
@@ -113,21 +133,48 @@ public class Main {
         catch (InterruptedException e){
             System.err.println("Process interrupted");
         }
-        /*catch (NotFoundException e){
-            System.err.println("X11 DPMS extension not supported by system");
-        }*/ catch (FrameGrabber.Exception e) {
+        catch (FrameGrabber.Exception e) {
             System.err.println("Grabber fails");
         }
         finally {
-            if(grabber != null) {
+            if(topGrabber != null) {
                 try {
-                    grabber.stop();
+                    topGrabber.stop();
                 } catch (FrameGrabber.Exception e) {
-                    System.err.println("Can't stop grabber");
+                    System.err.println("Can't stop top grabber");
+                }
+            }
+            if(bottomGrabber != null) {
+                try {
+                    bottomGrabber.stop();
+                } catch (FrameGrabber.Exception e) {
+                    System.err.println("Can't stop bottom grabber");
                 }
             }
             closeSocket();
         }
+    }
+
+    private static void sendColorValue(int top_r, int top_g, int top_b,
+                                       int bottom_r, int bottom_g, int bottom_b){
+        final String request = String.format(
+                "{\"method\":\"%s\",\"detailMessage\":\"%d,%d,%d-%d,%d,%d\"}",
+                REQ_SERIAL_RGB_VALUE,
+                top_r, top_g, top_b,
+                bottom_r, bottom_g, bottom_b
+        );
+        Thread t = new Thread() {
+            public void run(){
+                sendRequest(request);
+            }
+        };
+        t.start();
+        r_top_old = top_r;
+        g_top_old = top_g;
+        b_top_old = top_b;
+        bottom_r_old = bottom_r;
+        bottom_g_old = bottom_g;
+        bottom_b_old = bottom_b;
     }
 
     private static void openSocket(String serverUri, int serverPort){
