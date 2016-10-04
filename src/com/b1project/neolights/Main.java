@@ -106,12 +106,12 @@ public class Main {
                             bottom_b += (int) bottom_scalar.val(0);
                         }
                     }
-                    top_r = Math.round(top_r / (480 * 50)); //average red (remember that I skipped ever alternate pixel)
+                    top_r = Math.round(top_r / (480 * 50)); //average red
                     top_g = Math.round(top_g / (480 * 50)); //average green
-                    top_b = Math.round(top_b / (480 * 50)); //average blue*
-                    bottom_r = Math.round(bottom_r / (480 * 50)); //average red (remember that I skipped ever alternate pixel)
+                    top_b = Math.round(top_b / (480 * 50)); //average blue
+                    bottom_r = Math.round(bottom_r / (480 * 50)); //average red
                     bottom_g = Math.round(bottom_g / (480 * 50)); //average green
-                    bottom_b = Math.round(bottom_b / (480 * 50)); //average blue*
+                    bottom_b = Math.round(bottom_b / (480 * 50)); //average blue
                 }
                 else{
                     top_r = 0xaa;
@@ -158,7 +158,7 @@ public class Main {
     private static void sendColorValue(int top_r, int top_g, int top_b,
                                        int bottom_r, int bottom_g, int bottom_b){
         final String request = String.format(
-                "{\"method\":\"%s\",\"detailMessage\":\"%d,%d,%d-%d,%d,%d\"}",
+                "{\"method\":\"%s\",\"detailMessage\":\"%d,%d,%d|%d,%d,%d\"}",
                 REQ_SERIAL_RGB_VALUE,
                 top_r, top_g, top_b,
                 bottom_r, bottom_g, bottom_b
