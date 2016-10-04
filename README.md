@@ -13,10 +13,11 @@ Here's the code you must load in the Arduino part of the UDOO
 ```Arduino
 #include <Arduino.h>
 
+#define TOP_STRIP 0x30
+#define BOTTOM_STRIP 0x31
+
 int led = 13;
 
-int topRed, topGreen, topBlue; 
-int bottomRed, bottomGreen, bottomBlue; 
 int topRedPin = 10; //Red: PWM pin 10
 int topGreenPin = 11; //Green: PWM pin 11
 int topBluePin = 9; //Blue: PWM pin 9 
@@ -31,43 +32,21 @@ void setup() {
   
   // configure led's pin mode to output 
   pinMode(led, OUTPUT); 
-  int topRed = 255; 
-  int topBlue = 255; 
-  int topGreen = 255; 
-  int bottomRed = 255; 
-  int bottomBlue = 255; 
-  int bottomGreen = 255; 
   digitalWrite(led, HIGH); 
-  analogWrite (topRedPin, 255); 
-  analogWrite (topGreenPin, 0); 
-  analogWrite (topBluePin, 0);
+  setRGB(TOP_STRIP, 255, 0, 0);
   delay(100);
-  analogWrite (topRedPin, 0); 
-  analogWrite (topGreenPin, 255); 
-  analogWrite (topBluePin, 0);
+  setRGB(TOP_STRIP, 0, 255, 0);
   delay(100);
-  analogWrite (topRedPin, 0); 
-  analogWrite (topGreenPin, 0); 
-  analogWrite (topBluePin, 255);
+  setRGB(TOP_STRIP, 0, 0, 255);
   delay(100);
-  analogWrite (bottomRedPin, 0); 
-  analogWrite (bottomGreenPin, 0); 
-  analogWrite (bottomBluePin, 255);
+  setRGB(BOTTOM_STRIP, 0, 0, 255);
   delay(100);
-  analogWrite (bottomRedPin, 0); 
-  analogWrite (bottomGreenPin, 255); 
-  analogWrite (bottomBluePin, 0);
+  setRGB(BOTTOM_STRIP, 0, 255, 0);
   delay(100);
-  analogWrite (bottomRedPin, 255); 
-  analogWrite (bottomGreenPin, 0); 
-  analogWrite (bottomBluePin, 0);
+  setRGB(BOTTOM_STRIP, 255, 0, 0);
   delay(100);
-  analogWrite (topRedPin, topRed); 
-  analogWrite (topGreenPin, topGreen); 
-  analogWrite (topBluePin, topBlue);
-  analogWrite (bottomRedPin, bottomRed); 
-  analogWrite (bottomGreenPin, bottomGreen); 
-  analogWrite (bottomBluePin, bottomBlue);
+  setRGB(TOP_STRIP, 255, 255, 255);
+  setRGB(BOTTOM_STRIP, 255, 255, 255);
  
 } 
 
@@ -78,27 +57,27 @@ void loop() {
    int byteRead = Serial.read();
    if(byteRead == 0xff){
     int pos = Serial.read(); 
-    //Serial.println(pos);
-    if(pos == 0x30){ 
-      topRed = Serial.read(); 
-      topGreen= Serial.read(); 
-      topBlue = Serial.read(); 
-      analogWrite (topRedPin, topRed); 
-      analogWrite (topGreenPin, topGreen); 
-      analogWrite (topBluePin, topBlue);
-    } 
-    else if(pos == 0x31){ 
-      bottomRed = Serial.read(); 
-      bottomGreen= Serial.read(); 
-      bottomBlue = Serial.read(); 
-      analogWrite (bottomRedPin, bottomRed); 
-      analogWrite (bottomGreenPin, bottomGreen); 
-      analogWrite (bottomBluePin, bottomBlue); 
-    } 
+    int red = Serial.read(); 
+    int green= Serial.read(); 
+    int blue = Serial.read(); 
+    setRGB(pos, red, green, blue);
    }
  }
  delay(10); 
  digitalWrite(led, LOW); 
+}
+
+void setRGB(int pos, int red, int green, int blue){
+    if(pos == 0x30){ 
+      analogWrite (topRedPin, red); 
+      analogWrite (topGreenPin, green); 
+      analogWrite (topBluePin, blue);
+    } 
+    else if(pos == 0x31){ 
+      analogWrite (bottomRedPin, red); 
+      analogWrite (bottomGreenPin, green); 
+      analogWrite (bottomBluePin, blue); 
+    } 
 }
 
 ```
