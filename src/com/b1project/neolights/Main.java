@@ -114,10 +114,10 @@ public class Main {
                     bottom_b = Math.round(bottom_b / (480 * 50)); //average blue
                 }
                 else{
-                    top_r = 0xaa;
+                    top_r = 0x77;
                     top_g = 0x00;
                     top_b = 0x00;
-                    bottom_r = 0xaa;
+                    bottom_r = 0x77;
                     bottom_g = 0x00;
                     bottom_b = 0x00;
                 }
