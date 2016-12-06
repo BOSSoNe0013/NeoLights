@@ -3,9 +3,25 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b1project.neolights</groupId>
 	<artifactId>neo-light</artifactId>
-	<version>0.0.1</version>
+	<version>1.0.0</version>
 	<name>Udoo Neo ambiant light control</name>
-	<url></url>
+	<url>https://github.com/BOSSoNe0013/NeoLights</url>
+    <organization>
+        <name>The B1 Project</name>
+        <url>https://www.b1project.com</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Cyril Bosselut</name>
+            <email>bossone0013@gmail.com</email>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
 
 	<properties>
 		<java.version>1.7</java.version>
@@ -31,10 +47,39 @@
             <artifactId>javacv</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+          <groupId>com.dorkbox</groupId>
+          <artifactId>SystemTray</artifactId>
+          <version>2.20</version>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-nop</artifactId>
+          <version>1.7.21</version>
+        </dependency>
 	</dependencies>
 	<build>
         <sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>src/res</directory>
+			</resource>
+		</resources>
 		<plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <configuration>
+                <archive>
+                  <manifest>
+                    <mainClass>test.App</mainClass>
+                    <addDefaultImplementationEntries>
+                      true
+                    </addDefaultImplementationEntries>
+                  </manifest>
+                </archive>
+              </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
