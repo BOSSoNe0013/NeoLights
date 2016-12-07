@@ -1,5 +1,6 @@
 NeoLights: PC ambiant lights manager for NeoJava
 ------------------------------------------------
+[![NeoLights demo](http://img.youtube.com/vi/HDTILDFrtZg/0.jpg)](http://www.youtube.com/watch?v=HDTILDFrtZg "GNU/Linux computer ambiant light ")
 
 ## 1 - Build
 Use maven for build:
