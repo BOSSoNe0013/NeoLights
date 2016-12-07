@@ -12,14 +12,23 @@
     </organization>
     <developers>
         <developer>
+            <id>BOSSoNe</id>
             <name>Cyril Bosselut</name>
             <email>bossone0013@gmail.com</email>
+            <organization>The B1 Project</organization>
+            <organizationUrl>https://www.b1project.com</organizationUrl>
+            <timezone>Europe/Paris</timezone>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
         </developer>
     </developers>
     <licenses>
         <license>
             <name>Apache-2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>manual</distribution>
         </license>
     </licenses>
 
