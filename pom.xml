@@ -57,14 +57,24 @@
             <version>1.2</version>
         </dependency>
         <dependency>
-          <groupId>com.dorkbox</groupId>
-          <artifactId>SystemTray</artifactId>
-          <version>2.20</version>
+            <groupId>com.dorkbox</groupId>
+            <artifactId>SystemTray</artifactId>
+            <version>2.20</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-nop</artifactId>
-          <version>1.7.21</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.21</version>
         </dependency>
 	</dependencies>
 	<build>
