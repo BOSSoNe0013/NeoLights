@@ -55,8 +55,8 @@ public class Main {
     private static boolean pause_grabber = false;
     private static String host_address = DEFAULT_HOST_ADDRESS;
     private static int host_port = DEFAULT_HOST_PORT;
-    private static AppIcon APP_ICON = new AppIcon("/icon.png", "Application icon");
-    private static AppIcon APP_ICON_OFF = new AppIcon("/icon_off.png", "Application icon disabled");
+    private final static AppIcon APP_ICON = new AppIcon("/icon.png", "Application icon");
+    private final static AppIcon APP_ICON_OFF = new AppIcon("/icon_off.png", "Application icon disabled");
 
     public static void main(String[] args) {
         System.setProperty("SWT_GTK3", "0");
