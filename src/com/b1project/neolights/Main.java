@@ -231,6 +231,8 @@ public class Main {
                     bottom_b = Math.round(bottom_b / (480 * 50)); //average blue
                     top_screenshot.close();
                     bottom_screenshot.close();
+                    top_screenshot.release();
+                    bottom_screenshot.release();
                 }
                 else{
                     top_r = 0x77;
@@ -258,6 +260,7 @@ public class Main {
             if(topGrabber != null) {
                 try {
                     topGrabber.stop();
+                    topGrabber.release();
                 } catch (FrameGrabber.Exception e) {
                     System.err.println("\nCan't stop top grabber");
                 }
@@ -265,6 +268,7 @@ public class Main {
             if(bottomGrabber != null) {
                 try {
                     bottomGrabber.stop();
+                    bottomGrabber.release();
                 } catch (FrameGrabber.Exception e) {
                     System.err.println("\nCan't stop bottom grabber");
                 }
