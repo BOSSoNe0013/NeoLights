@@ -229,6 +229,8 @@ public class Main {
                     bottom_r = Math.round(bottom_r / (480 * 50)); //average red
                     bottom_g = Math.round(bottom_g / (480 * 50)); //average green
                     bottom_b = Math.round(bottom_b / (480 * 50)); //average blue
+                    top_screenshot.close();
+                    bottom_screenshot.close();
                 }
                 else{
                     top_r = 0x77;
