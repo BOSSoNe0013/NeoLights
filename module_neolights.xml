@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_neolights" default="compile.module.neolights" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <dirname property="module.neolights.basedir" file="${ant.file.module_neolights}"/>
+  
+  <property name="module.jdk.home.neolights" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.neolights" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.neolights" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.neolights" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="neolights.output.dir" value="${module.neolights.basedir}/out/production/NeoLights"/>
+  <property name="neolights.testoutput.dir" value="${module.neolights.basedir}/out/test/NeoLights"/>
+  
+  <path id="neolights.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="neolights.module.production.classpath">
+    <path refid="${module.jdk.classpath.neolights}"/>
+  </path>
+  
+  <path id="neolights.runtime.production.module.classpath">
+    <pathelement location="${neolights.output.dir}"/>
+  </path>
+  
+  <path id="neolights.module.classpath">
+    <path refid="${module.jdk.classpath.neolights}"/>
+    <pathelement location="${neolights.output.dir}"/>
+  </path>
+  
+  <path id="neolights.runtime.module.classpath">
+    <pathelement location="${neolights.testoutput.dir}"/>
+    <pathelement location="${neolights.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.neolights">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.neolights">
+    <patternset refid="excluded.from.module.neolights"/>
+  </patternset>
+  
+  <path id="neolights.module.sourcepath">
+    <dirset dir="${module.neolights.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.neolights" depends="compile.module.neolights.production,compile.module.neolights.tests" description="Compile module NeoLights"/>
+  
+  <target name="compile.module.neolights.production" depends="register.custom.compilers" description="Compile module NeoLights; production classes">
+    <mkdir dir="${neolights.output.dir}"/>
+    <javac2 destdir="${neolights.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.neolights}/javac">
+      <compilerarg line="${compiler.args.neolights}"/>
+      <bootclasspath refid="neolights.module.bootclasspath"/>
+      <classpath refid="neolights.module.production.classpath"/>
+      <src refid="neolights.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.neolights"/>
+    </javac2>
+    
+    <copy todir="${neolights.output.dir}">
+      <fileset dir="${module.neolights.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.neolights.tests" depends="register.custom.compilers,compile.module.neolights.production" description="compile module NeoLights; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.neolights" description="cleanup module">
+    <delete dir="${neolights.output.dir}"/>
+    <delete dir="${neolights.testoutput.dir}"/>
+  </target>
+</project>

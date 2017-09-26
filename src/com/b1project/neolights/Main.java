@@ -1,8 +1,6 @@
 package com.b1project.neolights;
 
-import dorkbox.systemTray.MenuEntry;
 import dorkbox.systemTray.SystemTray;
-import dorkbox.systemTray.SystemTrayMenuAction;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
@@ -32,7 +30,7 @@ import java.net.Socket;
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
  */
-public class Main {
+class Main {
 
     private final static String DEFAULT_HOST_ADDRESS = "192.168.7.2";
     private final static int DEFAULT_HOST_PORT = 45045;
@@ -60,29 +58,41 @@ public class Main {
 
     public static void main(String[] args) {
         System.setProperty("SWT_GTK3", "0");
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                try {
-                    pause_grabber = true;
-                    Thread.sleep(200);
-                    System.out.println("\nShutting down ...");
-                    closeSocket();
-                    Thread.sleep(500);
-
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    System.err.println("\nError: " + e.getMessage());
-                }
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(Main::quit));
         host_address = args[0];
         host_port = Integer.parseInt(args[1]);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                showTrayIcon();
-            }
-        });
+        SwingUtilities.invokeLater(Main::showTrayIcon);
         openSocket();
+    }
+
+    private static void exit() {
+        try {
+            pause_grabber = true;
+            if(socket == null) {
+                openSocket();
+            }
+            Thread.sleep(200);
+            sendColorValue(0, 0, 0, 0, 0, 0);
+            Thread.sleep(2);
+            System.exit(0);
+
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            System.err.println("\nError: " + e.getMessage());
+        }
+    }
+
+    private static void quit() {
+        try {
+            System.out.println("\nShutting down ...");
+            Thread.sleep(2);
+            closeSocket();
+            Thread.sleep(500);
+
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            System.err.println("\nError: " + e.getMessage());
+        }
     }
 
     private static void showTrayIcon(){
@@ -97,61 +107,48 @@ public class Main {
         tray.setStatus("NeoLights");
 
         //Add components to pop-up menu
-        tray.addMenuEntry("Pause grabber", new SystemTrayMenuAction() {
-            @Override
-            public void onClick(SystemTray systemTray, MenuEntry menuEntry) {
-                set_grabber_status(false);
-            }
+        tray.addMenuEntry("Pause grabber", (systemTray, menuEntry) -> set_grabber_status(!pause_grabber));
+        tray.addMenuEntry("About", (systemTray, menuEntry) -> {
+            Package p = Main.class.getPackage();
+            String appName = p.getImplementationTitle();
+            String version = p.getImplementationVersion();
+            String vendor = p.getImplementationVendor();
+            String url = "https://github.com/BOSSoNe0013/NeoLights";
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            constraints.weightx = 1.0f;
+            constraints.weighty = 1.0f;
+            constraints.insets = new Insets(5, 5, 5, 5);
+            constraints.fill = GridBagConstraints.BOTH;
+            JPanel panel = new JPanel(new GridBagLayout());
+            JLabel appNameLabel =
+                    new JLabel(
+                            "<html><span style='font-weight:bold;font-size:1.52em'>" + appName + "<span></html>"
+                    );
+            panel.add(appNameLabel, constraints);
+            constraints.gridy++;
+            JLabel appVendorLabel = new JLabel(vendor);
+            panel.add(appVendorLabel, constraints);
+            constraints.gridy++;
+            JLabel appVersionLabel = new JLabel("ver. " + version);
+            panel.add(appVersionLabel, constraints);
+            constraints.gridy++;
+            panel.add(new JLabel("GitHub:"), constraints);
+            constraints.gridy++;
+            JLabel gitHubUrlLabel =
+                    new JLabel(
+                            "<html><a href='" + url + "'>" + url + "</a></html>"
+                    );
+            gitHubUrlLabel.setFocusable(true);
+            panel.add(gitHubUrlLabel, constraints);
+            JOptionPane.showMessageDialog(null,
+                    panel,
+                    "About NeoLights",
+                    JOptionPane.INFORMATION_MESSAGE,
+                    APP_ICON.getIcon());
         });
-        tray.addMenuEntry("About", new SystemTrayMenuAction() {
-            @Override
-            public void onClick(SystemTray systemTray, MenuEntry menuEntry) {
-                Package p = Main.class.getPackage();
-                String appName = p.getImplementationTitle();
-                String version = p.getImplementationVersion();
-                String vendor = p.getImplementationVendor();
-                String url = "https://github.com/BOSSoNe0013/NeoLights";
-                GridBagConstraints constraints = new GridBagConstraints();
-                constraints.gridx = 0;
-                constraints.gridy = 0;
-                constraints.weightx = 1.0f;
-                constraints.weighty = 1.0f;
-                constraints.insets = new Insets(5, 5, 5, 5);
-                constraints.fill = GridBagConstraints.BOTH;
-                JPanel panel = new JPanel(new GridBagLayout());
-                JLabel appNameLabel =
-                        new JLabel(
-                                "<html><span style='font-weight:bold;font-size:1.52em'>" + appName + "<span></html>"
-                        );
-                panel.add(appNameLabel, constraints);
-                constraints.gridy++;
-                JLabel appVendorLabel = new JLabel(vendor);
-                panel.add(appVendorLabel, constraints);
-                constraints.gridy++;
-                JLabel appVersionLabel = new JLabel("ver. " + version);
-                panel.add(appVersionLabel, constraints);
-                constraints.gridy++;
-                panel.add(new JLabel("GitHub:"), constraints);
-                constraints.gridy++;
-                JLabel gitHubUrlLabel =
-                        new JLabel(
-                                "<html><a href='" + url + "'>" + url + "</a></html>"
-                        );
-                gitHubUrlLabel.setFocusable(true);
-                panel.add(gitHubUrlLabel, constraints);
-                JOptionPane.showMessageDialog(null,
-                        panel,
-                        "About NeoLights",
-                        JOptionPane.INFORMATION_MESSAGE,
-                        APP_ICON.getIcon());
-            }
-        });
-        tray.addMenuEntry("Quit", new SystemTrayMenuAction() {
-            @Override
-            public void onClick(SystemTray systemTray, MenuEntry menuEntry) {
-                System.exit(0);
-            }
-        });
+        tray.addMenuEntry("Quit", (systemTray, menuEntry) -> exit());
     }
 
     private static void scan_display(){
@@ -185,6 +182,7 @@ public class Main {
             while(true) {
                 if(pause_grabber){
                     System.out.println("\n Grabber in standby");
+                    Thread.sleep((int)(displayInfo.getRefreshRate() * 7.5));
                     break;
                 }
                 if(socket == null || socket.isClosed()){
@@ -229,10 +227,6 @@ public class Main {
                     bottom_r = Math.round(bottom_r / (480 * 50)); //average red
                     bottom_g = Math.round(bottom_g / (480 * 50)); //average green
                     bottom_b = Math.round(bottom_b / (480 * 50)); //average blue
-                    top_screenshot.close();
-                    bottom_screenshot.close();
-                    top_screenshot.release();
-                    bottom_screenshot.release();
                 }
                 else{
                     top_r = 0x77;
@@ -247,7 +241,7 @@ public class Main {
                     System.out.printf("  Changes detected, sending request...\r");
                     sendColorValue(top_r, top_g, top_b, bottom_r, bottom_g, bottom_b);
                 }
-                Thread.sleep(100);
+                Thread.sleep((int)(displayInfo.getRefreshRate() * 7.5));
             }
         }
         catch (InterruptedException e){
@@ -279,27 +273,25 @@ public class Main {
 
     private static void set_grabber_status(boolean status){
         final SystemTray tray = SystemTray.getSystemTray();
-        if(pause_grabber && status){
-            pause_grabber = false;
-            tray.updateMenuEntry("Run grabber", "Pause grabber", new SystemTrayMenuAction() {
-                @Override
-                public void onClick(SystemTray systemTray, MenuEntry menuEntry) {
-                    set_grabber_status(false);
-                }
-            });
+        pause_grabber = status;
+        if(!pause_grabber ){
+            tray.updateMenuEntry_Text("Run grabber", "Pause grabber");
             tray.setIcon(APP_ICON.getURL());
             openSocket();
         }
         else{
-            pause_grabber = true;
-            closeSocket();
-            tray.updateMenuEntry("Pause grabber", "Run grabber", new SystemTrayMenuAction() {
-                @Override
-                public void onClick(SystemTray systemTray, MenuEntry menuEntry) {
-                    set_grabber_status(true);
-                }
-            });
+            tray.updateMenuEntry_Text("Pause grabber", "Run grabber");
             tray.setIcon(APP_ICON_OFF.getURL());
+            try {
+                sendColorValue(0x77, 0, 0, 0x77, 0, 0);
+                Thread.sleep(2);
+                closeSocket();
+            }
+            catch (Exception e) {
+                System.err.println("\nError: " + e.getMessage());
+                ask_for_connection();
+
+            }
         }
     }
 
@@ -311,11 +303,7 @@ public class Main {
                 top_r, top_g, top_b,
                 bottom_r, bottom_g, bottom_b
         );
-        Thread t = new Thread() {
-            public void run() {
-                sendRequest(request);
-            }
-        };
+        Thread t = new Thread(() -> sendRequest(request));
         t.start();
         r_top_old = top_r;
         g_top_old = top_g;
@@ -343,11 +331,7 @@ public class Main {
             Thread.sleep(2);
             outPrintWriter = new PrintWriter(socket.getOutputStream(), true);
             System.out.println("\nConnected");
-                Thread t = new Thread() {
-                    public void run(){
-                        scan_display();
-                    }
-                };
+                Thread t = new Thread(Main::scan_display);
                 t.start();
         }
         catch (Exception e) {
@@ -360,10 +344,6 @@ public class Main {
     private static void closeSocket(){
         if(socket != null && socket.isConnected()){
             try {
-                sendColorValue(0, 0, 0, 0, 0, 0);
-                Thread.sleep(2);
-                sendColorValue(0, 0, 0, 0, 0, 0);
-                Thread.sleep(2);
                 socket.close();
                 socket = null;
             } catch (Exception e) {

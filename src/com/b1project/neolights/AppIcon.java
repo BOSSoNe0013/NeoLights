@@ -41,6 +41,7 @@ class AppIcon {
             }
         }
 
+        @SuppressWarnings("unused")
         Image getImage(){
             return this.getIcon().getImage();
         }

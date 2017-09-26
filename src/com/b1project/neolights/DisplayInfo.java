@@ -4,6 +4,7 @@ package com.b1project.neolights;
 import com.sun.jna.*;
 import com.sun.jna.platform.unix.X11;
 
+import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,10 +26,11 @@ import java.util.List;
  * You should have received a copy of the Apache License
  * along with this program.  If not, see <http://www.apache.org/licenses/LICENSE-2.0>.
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"Unused", "WeakerAccess"})
 class DisplayInfo {
 
     private X11.Display display;
+    private int refreshRate = 100;
 
     DisplayInfo() {
         display = X11.INSTANCE.XOpenDisplay(null);
@@ -38,13 +40,34 @@ class DisplayInfo {
         if (display == null) {
           throw new RuntimeException("Could not find a display, please setup your DISPLAY environment variable");
         }
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+
+        for (GraphicsDevice g : gs) {
+            DisplayMode dm = g.getDisplayMode();
+            System.out.printf("Screen #%s\n", g.getIDstring());
+
+            int refreshRate = dm.getRefreshRate();
+            if (refreshRate == DisplayMode.REFRESH_RATE_UNKNOWN) {
+                System.out.println("Unknown rate");
+            }
+            else{
+                System.out.printf("Refresh rate: %d\n", refreshRate);
+                this.refreshRate = refreshRate;
+            }
+        }
         ExtVersionMajor major = new ExtVersionMajor();
         ExtVersionMinor minor = new ExtVersionMinor();
-        DPMS.INSTANCE.DPMSGetVersion(display, major, minor);
-        System.out.printf("DPMS version: %d.%d\n", major.value, minor.value);
+        int res = DPMS.INSTANCE.DPMSGetVersion(display, major, minor);
+        System.out.printf("DPMS version: %d.%d (%d)\n", major.value, minor.value, res);
+    }
+
+    int getRefreshRate() {
+        return refreshRate;
     }
 
     public static class DPMSPower extends Structure {
+        @SuppressWarnings("unused")
         public int level;
 
         @Override
@@ -54,6 +77,7 @@ class DisplayInfo {
     }
 
     public static class DPMSState extends Structure {
+        @SuppressWarnings("CanBeFinal")
         public boolean enable = false;
 
         @Override
@@ -63,6 +87,7 @@ class DisplayInfo {
     }
 
     public static class ExtVersionMajor extends Structure {
+        @SuppressWarnings("unused")
         public int value;
         @Override
         protected List getFieldOrder() {
@@ -71,6 +96,7 @@ class DisplayInfo {
     }
 
     public static class ExtVersionMinor extends Structure {
+        @SuppressWarnings("unused")
         public int value;
         @Override
         protected List getFieldOrder() {
@@ -78,7 +104,7 @@ class DisplayInfo {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "UnusedReturnValue"})
     interface DPMS extends Library {
         DPMS INSTANCE = (DPMS) Native.loadLibrary("Xext", DPMS.class);
         int DPMSGetVersion(X11.Display display, ExtVersionMajor major, ExtVersionMinor minor);

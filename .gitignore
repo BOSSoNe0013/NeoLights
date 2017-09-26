@@ -9,14 +9,11 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-### Java template
-*.class
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
@@ -26,5 +23,5 @@ hs_err_pid*
 .idea/
 NeoLights.iml
 libs/
-module_neolights.xml
 screencapture.jpg
+neo-light.iml
