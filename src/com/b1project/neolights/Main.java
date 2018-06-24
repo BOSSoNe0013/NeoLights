@@ -1,6 +1,7 @@
 package com.b1project.neolights;
 
 import com.b1project.neolights.interfaces.DBusLightsInterface;
+import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -154,19 +155,19 @@ class Main implements DBusLightsInterface {
     }
 
     private static void showTrayIcon(){
-        if (SystemTray.getSystemTray() == null){
+        if (SystemTray.get() == null){
             System.err.println("\nTray icon not supported");
             return;
         }
         System.out.println("\nAdding tray icon");
-        final SystemTray tray = SystemTray.getSystemTray();
-        SystemTray.COMPATIBILITY_MODE = true;
-        tray.setIcon(APP_ICON.getURL());
+        final SystemTray tray = SystemTray.get();
+        //SystemTray.COMPATIBILITY_MODE = true;
+        tray.setImage(APP_ICON.getURL());
         tray.setStatus("NeoLights");
 
         //Add components to pop-up menu
-        tray.addMenuEntry("Pause grabber", (systemTray, menuEntry) -> set_grabber_status(!pause_grabber));
-        tray.addMenuEntry("About", (systemTray, menuEntry) -> {
+        tray.getMenu().add(new MenuItem("Pause grabber", e -> set_grabber_status(!pause_grabber)));
+        tray.getMenu().add(new MenuItem("About", e -> {
             Package p = Main.class.getPackage();
             String appName = p.getImplementationTitle();
             String version = p.getImplementationVersion();
@@ -205,9 +206,9 @@ class Main implements DBusLightsInterface {
                     "About NeoLights",
                     JOptionPane.INFORMATION_MESSAGE,
                     APP_ICON.getIcon());
-        });
-        tray.addMenuEntry("Benchmark", (systemTray, menuEntry) -> benchmark());
-        tray.addMenuEntry("Quit", (systemTray, menuEntry) -> exit());
+        }));
+        tray.getMenu().add(new MenuItem("Benchmark", e -> benchmark()));
+        tray.getMenu().add(new MenuItem("Quit", e -> exit()));
     }
 
     private static void benchmark() {
@@ -481,12 +482,13 @@ class Main implements DBusLightsInterface {
     }
 
     private static void set_grabber_status(boolean status){
-        final SystemTray tray = SystemTray.getSystemTray();
+        final SystemTray tray = SystemTray.get();
+        MenuItem menuItem = (MenuItem) tray.getMenu().getFirst();
         pause_grabber = status;
         if(!pause_grabber ){
             try {
-                tray.updateMenuEntry_Text("Run grabber", "Pause grabber");
-                tray.setIcon(APP_ICON.getURL());
+                menuItem.setText("Pause grabber");
+                tray.setImage(APP_ICON.getURL());
             }
             catch (NullPointerException e){
                 System.err.println("\nError: can't update tray icon menu");
@@ -498,8 +500,8 @@ class Main implements DBusLightsInterface {
         }
         else{
             try {
-                tray.updateMenuEntry_Text("Pause grabber", "Run grabber");
-                tray.setIcon(APP_ICON_OFF.getURL());
+                menuItem.setText("Run grabber");
+                tray.setImage(APP_ICON_OFF.getURL());
             }
             catch (NullPointerException e){
                 System.err.println("\nError: can't update tray icon menu");
