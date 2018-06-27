@@ -71,7 +71,7 @@ class DisplayInfo {
         public int level;
 
         @Override
-        protected List getFieldOrder() {
+        protected List<String> getFieldOrder() {
             return Collections.singletonList("level");
         }
     }
@@ -81,7 +81,7 @@ class DisplayInfo {
         public boolean enable = false;
 
         @Override
-        protected List getFieldOrder() {
+        protected List<String> getFieldOrder() {
             return Collections.singletonList("enable");
         }
     }
@@ -90,7 +90,7 @@ class DisplayInfo {
         @SuppressWarnings("unused")
         public int value;
         @Override
-        protected List getFieldOrder() {
+        protected List<String> getFieldOrder() {
             return Collections.singletonList("value");
         }
     }
@@ -99,7 +99,7 @@ class DisplayInfo {
         @SuppressWarnings("unused")
         public int value;
         @Override
-        protected List getFieldOrder() {
+        protected List<String> getFieldOrder() {
             return Collections.singletonList("value");
         }
     }

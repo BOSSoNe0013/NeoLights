@@ -141,6 +141,11 @@ class Main implements DBusLightsInterface {
         b_default = blue;
     }
 
+    @Override
+    public void runBenchmark() {
+        benchmark();
+    }
+
     private static void quit() {
         try {
             System.out.println("\nShutting down ...");
@@ -167,48 +172,55 @@ class Main implements DBusLightsInterface {
 
         //Add components to pop-up menu
         tray.getMenu().add(new MenuItem("Pause grabber", e -> set_grabber_status(!pause_grabber)));
-        tray.getMenu().add(new MenuItem("About", e -> {
-            Package p = Main.class.getPackage();
-            String appName = p.getImplementationTitle();
-            String version = p.getImplementationVersion();
-            String vendor = p.getImplementationVendor();
-            String url = "https://github.com/BOSSoNe0013/NeoLights";
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.gridx = 0;
-            constraints.gridy = 0;
-            constraints.weightx = 1.0f;
-            constraints.weighty = 1.0f;
-            constraints.insets = new Insets(5, 5, 5, 5);
-            constraints.fill = GridBagConstraints.BOTH;
-            JPanel panel = new JPanel(new GridBagLayout());
-            JLabel appNameLabel =
-                    new JLabel(
-                            "<html><span style='font-weight:bold;font-size:1.52em'>" + appName + "<span></html>"
-                    );
-            panel.add(appNameLabel, constraints);
-            constraints.gridy++;
-            JLabel appVendorLabel = new JLabel(vendor);
-            panel.add(appVendorLabel, constraints);
-            constraints.gridy++;
-            JLabel appVersionLabel = new JLabel("ver. " + version);
-            panel.add(appVersionLabel, constraints);
-            constraints.gridy++;
-            panel.add(new JLabel("GitHub:"), constraints);
-            constraints.gridy++;
-            JLabel gitHubUrlLabel =
-                    new JLabel(
-                            "<html><a href='" + url + "'>" + url + "</a></html>"
-                    );
-            gitHubUrlLabel.setFocusable(true);
-            panel.add(gitHubUrlLabel, constraints);
-            JOptionPane.showMessageDialog(null,
-                    panel,
-                    "About NeoLights",
-                    JOptionPane.INFORMATION_MESSAGE,
-                    APP_ICON.getIcon());
-        }));
+        tray.getMenu().add(new MenuItem("About", e -> about()));
         tray.getMenu().add(new MenuItem("Benchmark", e -> benchmark()));
         tray.getMenu().add(new MenuItem("Quit", e -> exit()));
+    }
+
+    @Override
+    public void showAboutDialog() {
+        about();
+    }
+
+    private static void about() {
+        Package p = Main.class.getPackage();
+        String appName = p.getImplementationTitle();
+        String version = p.getImplementationVersion();
+        String vendor = p.getImplementationVendor();
+        String url = "https://github.com/BOSSoNe0013/NeoLights";
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.weightx = 1.0f;
+        constraints.weighty = 1.0f;
+        constraints.insets = new Insets(5, 5, 5, 5);
+        constraints.fill = GridBagConstraints.BOTH;
+        JPanel panel = new JPanel(new GridBagLayout());
+        JLabel appNameLabel =
+                new JLabel(
+                        "<html><span style='font-weight:bold;font-size:1.52em'>" + appName + "<span></html>"
+                );
+        panel.add(appNameLabel, constraints);
+        constraints.gridy++;
+        JLabel appVendorLabel = new JLabel(vendor);
+        panel.add(appVendorLabel, constraints);
+        constraints.gridy++;
+        JLabel appVersionLabel = new JLabel("ver. " + version);
+        panel.add(appVersionLabel, constraints);
+        constraints.gridy++;
+        panel.add(new JLabel("GitHub:"), constraints);
+        constraints.gridy++;
+        JLabel gitHubUrlLabel =
+                new JLabel(
+                        "<html><a href='" + url + "'>" + url + "</a></html>"
+                );
+        gitHubUrlLabel.setFocusable(true);
+        panel.add(gitHubUrlLabel, constraints);
+        JOptionPane.showMessageDialog(null,
+                panel,
+                "About NeoLights",
+                JOptionPane.INFORMATION_MESSAGE,
+                APP_ICON.getIcon());
     }
 
     private static void benchmark() {

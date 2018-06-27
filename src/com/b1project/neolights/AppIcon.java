@@ -23,8 +23,8 @@ import java.net.URL;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 class AppIcon {
-        private String path = "";
-        private String description = "Application Icon";
+        private String path;
+        private String description;
 
         AppIcon(String path, String description){
             this.path = path;

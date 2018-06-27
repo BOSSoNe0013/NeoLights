@@ -37,4 +37,10 @@ public interface DBusLightsInterface extends DBusInterface {
 
     @DBus.Description("Set standby color")
     void setStandbyColor(int red, int green, int blue);
+
+    @DBus.Description("Start screen grabber benchmark")
+    void runBenchmark();
+
+    @DBus.Description("Display About dialog")
+    void showAboutDialog();
 }
