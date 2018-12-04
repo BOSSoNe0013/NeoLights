@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b1project.neolights</groupId>
 	<artifactId>neo-light</artifactId>
-	<version>1.0.3</version>
+	<version>1.1.0</version>
 	<name>Udoo Neo ambiant light control</name>
 	<url>https://github.com/BOSSoNe0013/NeoLights</url>
     <organization>

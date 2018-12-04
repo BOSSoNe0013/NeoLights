@@ -285,6 +285,9 @@ class Main implements DBusLightsInterface {
                     i += 4;
                 }
 
+                top_indexer.release();
+                bottom_indexer.release();
+
                 top_r = Math.round(top_r / (480f * 50)); //average red
                 top_g = Math.round(top_g / (480f * 50)); //average green
                 top_b = Math.round(top_b / (480f * 50)); //average blue
@@ -444,6 +447,9 @@ class Main implements DBusLightsInterface {
                         }
                         i += 4;
                     }
+
+                    top_indexer.release();
+                    bottom_indexer.release();
 
                     top_r = Math.round(top_r / (480f * 50)); //average red
                     top_g = Math.round(top_g / (480f * 50)); //average green
