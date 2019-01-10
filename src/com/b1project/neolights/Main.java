@@ -40,6 +40,7 @@ class Main implements DBusLightsInterface {
     private final static String DEFAULT_HOST_ADDRESS = "192.168.7.2";
     private final static int DEFAULT_HOST_PORT = 45045;
     private final static String REQ_SERIAL_RGB_VALUE = "tty/rgb";
+    private final static String REQ_BOARD_REBOOT = "board/reboot";
     private final static int DISPLAY_OFFSET_X = 0;
     private final static int DISPLAY_OFFSET_Y = 0;
     private final static int DISPLAY_WIDTH = 3840;
@@ -176,6 +177,7 @@ class Main implements DBusLightsInterface {
         tray.getMenu().add(new MenuItem("Pause grabber", e -> set_grabber_status(!pause_grabber)));
         tray.getMenu().add(new MenuItem("About", e -> about()));
         tray.getMenu().add(new MenuItem("Benchmark", e -> benchmark()));
+        tray.getMenu().add(new MenuItem("Reboot board", e -> reboot()));
         tray.getMenu().add(new MenuItem("Quit", e -> exit()));
     }
 
@@ -562,6 +564,17 @@ class Main implements DBusLightsInterface {
         );
         Thread t = new Thread(() -> sendRequest(request));
         t.start();
+    }
+
+    private static void reboot(){
+        set_grabber_status(false);
+        final String request = String.format(
+                "{\"method\":\"%s\"}",
+                REQ_BOARD_REBOOT
+        );
+        Thread t = new Thread(() -> sendRequest(request));
+        t.start();
+        //closeSocket();
     }
 
     private static void openSocket(){
