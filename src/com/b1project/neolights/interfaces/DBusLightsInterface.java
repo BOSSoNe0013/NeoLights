@@ -1,7 +1,6 @@
 package com.b1project.neolights.interfaces;
 
-import org.freedesktop.DBus;
-import org.freedesktop.dbus.DBusInterface;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 
 /**
  * Copyright (C) 2018 Cyril Bosselut <bossone0013@gmail.com>
@@ -23,24 +22,17 @@ import org.freedesktop.dbus.DBusInterface;
  */
 public interface DBusLightsInterface extends DBusInterface {
 
-    @DBus.Description("Get grabber status")
     boolean getGrabberStatus();
 
-    @DBus.Description("Toggle grabber status")
     boolean toggleGrabber();
 
-    @DBus.Description("Terminate the application")
     void quitGrabber();
 
-    @DBus.Description("Get standby color")
     int[] getStandbyColor();
 
-    @DBus.Description("Set standby color")
     void setStandbyColor(int red, int green, int blue);
 
-    @DBus.Description("Start screen grabber benchmark")
     void runBenchmark();
 
-    @DBus.Description("Display About dialog")
     void showAboutDialog();
 }

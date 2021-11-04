@@ -4,11 +4,12 @@ import com.b1project.neolights.interfaces.DBusLightsInterface;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
 import org.bytedeco.javacpp.indexer.UByteIndexer;
-import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.freedesktop.dbus.DBusConnection;
+import org.bytedeco.opencv.global.opencv_core;
+import org.bytedeco.opencv.opencv_core.IplImage;
+import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 import javax.swing.*;
@@ -80,7 +81,7 @@ class Main implements DBusLightsInterface {
     private void start() {
         try {
             System.out.println("Start service");
-            DBusConnection dbusConnection = DBusConnection.getConnection(DBusConnection.SESSION);
+            DBusConnection dbusConnection = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
             dbusConnection.requestBusName("com.b1project.neolights.Main");
             dbusConnection.exportObject("/com/b1project/neolights/Main", this);
             while (!should_quit) {
@@ -267,9 +268,9 @@ class Main implements DBusLightsInterface {
                     break;
                 }
                 long start = System.currentTimeMillis();
-                final opencv_core.IplImage top_screenshot = converter.convert(topGrabber.grab());
+                final IplImage top_screenshot = converter.convert(topGrabber.grab());
                 final UByteIndexer top_indexer = top_screenshot.createIndexer();
-                final opencv_core.IplImage bottom_screenshot = converter.convert(bottomGrabber.grab());
+                final IplImage bottom_screenshot = converter.convert(bottomGrabber.grab());
                 final UByteIndexer bottom_indexer = bottom_screenshot.createIndexer();
 
                 int i = 0;
@@ -290,12 +291,12 @@ class Main implements DBusLightsInterface {
                 top_indexer.release();
                 bottom_indexer.release();
 
-                top_r = Math.round(top_r / (480f * 50)); //average red
-                top_g = Math.round(top_g / (480f * 50)); //average green
-                top_b = Math.round(top_b / (480f * 50)); //average blue
-                bottom_r = Math.round(bottom_r / (480f * 50)); //average red
-                bottom_g = Math.round(bottom_g / (480f * 50)); //average green
-                bottom_b = Math.round(bottom_b / (480f * 50)); //average blue
+                top_r = Math.round(top_r / (float)(DISPLAY_WIDTH * SAMPLE_HEIGHT)); //average red
+                top_g = Math.round(top_g / (float)(DISPLAY_WIDTH * SAMPLE_HEIGHT)); //average green
+                top_b = Math.round(top_b / (float)(DISPLAY_WIDTH * SAMPLE_HEIGHT)); //average blue
+                bottom_r = Math.round(bottom_r / (float)(DISPLAY_WIDTH * SAMPLE_HEIGHT)); //average red
+                bottom_g = Math.round(bottom_g / (float)(DISPLAY_WIDTH * SAMPLE_HEIGHT)); //average green
+                bottom_b = Math.round(bottom_b / (float)(DISPLAY_WIDTH * SAMPLE_HEIGHT)); //average blue
                 duration = System.currentTimeMillis() - start;
                 total_time_ms += duration;
                 pass += 1;
@@ -388,12 +389,8 @@ class Main implements DBusLightsInterface {
         try {
             DisplayInfo displayInfo = new DisplayInfo();
             OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
-            int top_r = 0;
-            int top_g = 0;
-            int top_b = 0;
-            int bottom_r = 0;
-            int bottom_g = 0;
-            int bottom_b = 0;
+            int[] top_rgb = new int[] {0, 0, 0};
+            int[] bottom_rgb = new int[] {0, 0, 0};
             String loader = "-";
 
             topGrabber = make_grabber(DISPLAY_OFFSET_Y);
@@ -402,6 +399,8 @@ class Main implements DBusLightsInterface {
             int bottom_y = DISPLAY_HEIGHT + DISPLAY_OFFSET_Y - SAMPLE_HEIGHT;
             bottomGrabber = make_grabber(bottom_y);
             bottomGrabber.start();
+            
+            float samples_count = (DISPLAY_WIDTH * SAMPLE_HEIGHT)/4.0f;
 
             while(true) {
                 if(pause_grabber){
@@ -430,21 +429,21 @@ class Main implements DBusLightsInterface {
                 }
 
                 if(displayInfo.getDisplayStatus() == 0) {
-                    final opencv_core.IplImage top_screenshot = converter.convert(topGrabber.grab());
+                    final IplImage top_screenshot = converter.convert(topGrabber.grab());
                     final UByteIndexer top_indexer = top_screenshot.createIndexer();
-                    final opencv_core.IplImage bottom_screenshot = converter.convert(bottomGrabber.grab());
+                    final IplImage bottom_screenshot = converter.convert(bottomGrabber.grab());
                     final UByteIndexer bottom_indexer = bottom_screenshot.createIndexer();
 
                     int i = 0;
                     while (i < DISPLAY_WIDTH) {
                         int j = 0;
                         while (j < SAMPLE_HEIGHT) {
-                            top_r += top_indexer.get(j, i, 2);
-                            top_g += top_indexer.get(j, i, 1);
-                            top_b += top_indexer.get(j, i, 0);
-                            bottom_r += bottom_indexer.get(j, i, 2);
-                            bottom_g += bottom_indexer.get(j, i, 1);
-                            bottom_b += bottom_indexer.get(j, i, 0);
+                            top_rgb[0] += top_indexer.get(j, i, 2);
+                            top_rgb[1] += top_indexer.get(j, i, 1);
+                            top_rgb[2] += top_indexer.get(j, i, 0);
+                            bottom_rgb[0] += bottom_indexer.get(j, i, 2);
+                            bottom_rgb[1] += bottom_indexer.get(j, i, 1);
+                            bottom_rgb[2] += bottom_indexer.get(j, i, 0);
                             j +=+ 4;
                         }
                         i += 4;
@@ -453,23 +452,26 @@ class Main implements DBusLightsInterface {
                     top_indexer.release();
                     bottom_indexer.release();
 
-                    top_r = Math.round(top_r / (480f * 50)); //average red
-                    top_g = Math.round(top_g / (480f * 50)); //average green
-                    top_b = Math.round(top_b / (480f * 50)); //average blue
-                    bottom_r = Math.round(bottom_r / (480f * 50)); //average red
-                    bottom_g = Math.round(bottom_g / (480f * 50)); //average green
-                    bottom_b = Math.round(bottom_b / (480f * 50)); //average blue
+                    top_rgb[0] = Math.round(top_rgb[0] / samples_count); //average red
+                    top_rgb[1] = Math.round(top_rgb[1] / samples_count); //average green
+                    top_rgb[2] = Math.round(top_rgb[2] / samples_count); //average blue
+                    bottom_rgb[0] = Math.round(bottom_rgb[0] / samples_count); //average red
+                    bottom_rgb[1] = Math.round(bottom_rgb[1] / samples_count); //average green
+                    bottom_rgb[2] = Math.round(bottom_rgb[2] / samples_count); //average blue
                 }
                 else{
-                    top_r = 0x77;
-                    top_g = 0x00;
-                    top_b = 0x00;
-                    bottom_r = 0x77;
-                    bottom_g = 0x00;
-                    bottom_b = 0x00;
+                    top_rgb[0] = 0x77;
+                    top_rgb[1] = 0x00;
+                    top_rgb[2] = 0x00;
+                    bottom_rgb[0] = 0x77;
+                    bottom_rgb[1] = 0x00;
+                    bottom_rgb[2] = 0x00;
                 }
-                process_scan_result(top_r, top_g, top_b, bottom_r, bottom_g, bottom_b);
-                //Thread.sleep((displayInfo.getRefreshRate()));
+
+                top_rgb = increaseBrightness(top_rgb);
+                bottom_rgb = increaseBrightness(bottom_rgb);
+                process_scan_result(top_rgb, bottom_rgb);
+                Thread.sleep((displayInfo.getRefreshRate()));
             }
         }
         catch (InterruptedException e){
@@ -499,18 +501,36 @@ class Main implements DBusLightsInterface {
         }
     }
 
-    private static void process_scan_result(int top_r, int top_g, int top_b,
-                                       int bottom_r, int bottom_g, int bottom_b){
-        if(top_r != r_top_old || top_g != g_top_old || top_b != b_top_old
-                || bottom_r != bottom_r_old || bottom_g != bottom_g_old || bottom_b != bottom_b_old) {
+    private static float[] rgbToHsv(int[] rgb) {
+        return Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], null);
+    }
+
+    private static int[] hsvToRgb(float[] hsv) {
+        Color c = Color.getHSBColor(hsv[0], hsv[1], hsv[2]);
+        int red = c.getRed();
+        int green = c.getGreen();
+        int blue = c.getBlue();
+        return new int[] {red, green, blue};
+    }
+
+    private static int[] increaseBrightness(int[] rgb) {
+        float[] hsv = rgbToHsv(rgb);
+        hsv[2] *= 2.0;
+        return hsvToRgb(hsv);
+    }
+
+    private static void process_scan_result(int[] top_rgb,
+                                       int[] bottom_rgb){
+        if(top_rgb[0] != r_top_old || top_rgb[1] != g_top_old || top_rgb[2] != b_top_old
+                || bottom_rgb[0] != bottom_r_old || bottom_rgb[1] != bottom_g_old || bottom_rgb[2] != bottom_b_old) {
             System.out.print("    Changes detected, sending request...\r");
-            sendColorValue(top_r, top_g, top_b, bottom_r, bottom_g, bottom_b);
-            r_top_old = top_r;
-            g_top_old = top_g;
-            b_top_old = top_b;
-            bottom_r_old = bottom_r;
-            bottom_g_old = bottom_g;
-            bottom_b_old = bottom_b;
+            sendColorValue(top_rgb[0], top_rgb[1], top_rgb[2], bottom_rgb[0], bottom_rgb[1], bottom_rgb[2]);
+            r_top_old = top_rgb[0];
+            g_top_old = top_rgb[1];
+            b_top_old = top_rgb[2];
+            bottom_r_old = bottom_rgb[0];
+            bottom_g_old = bottom_rgb[1];
+            bottom_b_old = bottom_rgb[2];
         }
     }
 
